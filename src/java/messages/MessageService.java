@@ -118,7 +118,6 @@ public class MessageService {
         }
         if (newMessage != null) {
             controller.add(newMessage);
-
             return Response.ok(newMessage.toJSON()).build();
         } else {
             return Response.status(404).entity("Message not found").build();
@@ -137,14 +136,12 @@ public class MessageService {
             return Response.status(500).entity("Date format error").build();
         }
         if (updatedMessage != null) {
-
             for (int i = 0; i < controller.getMessages().size(); i++) {
                 if (controller.getMessages().get(i).getId() == id) {
                     controller.put(updatedMessage, id);
                     return Response.ok(updatedMessage.toJSON()).build();
                 }
             }
-
             return Response.status(404).entity("Message not updated").build();
         } else {
             return Response.status(404).entity("Message not found").build();
