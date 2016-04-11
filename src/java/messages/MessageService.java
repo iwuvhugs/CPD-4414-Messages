@@ -6,6 +6,11 @@
 package messages;
 
 import java.io.StringReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,6 +18,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.Consumes;
@@ -33,14 +39,10 @@ import javax.ws.rs.core.Response;
 @Path("/messages")
 public class MessageService {
 
+    @Inject
     private MessageController controller;
 
     private final DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-
-    public MessageService() {
-        this.controller = new MessageController();
-//        this.controller.add(new Message());
-    }
 
     /**
      *
@@ -49,7 +51,30 @@ public class MessageService {
     @GET
     @Produces("application/json")
     public Response getAll() {
-        return Response.ok(controller.toJSON()).build();
+
+        Connection conn;
+        try {
+            conn = DBUtil.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM messages");
+            while (rs.next()) {
+                Message message = new Message();
+                message.setId(rs.getInt("id"));
+                message.setTitle(rs.getString("title"));
+                message.setContents(rs.getString("contents"));
+                message.setAuthor(rs.getString("author"));
+                message.setSentTime(new Date());
+                if (!controller.contains(message)) {
+                    controller.add(message);
+                }
+            }
+            return Response.ok(controller.toJSON()).build();
+        } catch (SQLException ex) {
+            Logger.getLogger(MessageService.class.getName()).log(Level.SEVERE, null, ex);
+            return Response.status(500).entity("Database error").build();
+
+        }
+
     }
 
     /**
@@ -61,12 +86,34 @@ public class MessageService {
     @Path("{id}")
     @Produces("application/json")
     public Response getById(@PathParam("id") int id) {
-        for (Message m : controller.getMessages()) {
-            if (m.getId() == id) {
-                return Response.ok(m.toJSON()).build();
+
+        if (controller.contains(controller.getById(id))) {
+            return Response.ok(controller.getById(id).toJSON()).build();
+        } else {
+            Connection conn;
+            try {
+                conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM messages WHERE id = ?");
+                pstmt.setInt(1, id);
+                ResultSet rs = pstmt.executeQuery();
+                if (!rs.isBeforeFirst()) {
+                    return Response.status(404).entity("Message not found").build();
+                } else {
+                    Message message = new Message();
+                    message.setId(rs.getInt("id"));
+                    message.setTitle(rs.getString("title"));
+                    message.setContents(rs.getString("contents"));
+                    message.setAuthor(rs.getString("author"));
+                    System.out.println(rs.getDate("sentTime"));
+                    message.setSentTime(new Date());
+                    controller.add(message);
+                    return Response.ok(message.toJSON()).build();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(MessageService.class.getName()).log(Level.SEVERE, null, ex);
+                return Response.status(500).entity("Database error").build();
             }
         }
-        return Response.status(404).entity("Message not found").build();
     }
 
     /**
@@ -156,13 +203,49 @@ public class MessageService {
     @DELETE
     @Path("{id}")
     public Response delete(@PathParam("id") int id) {
-        for (int i = 0; i < controller.getMessages().size(); i++) {
-            if (controller.getMessages().get(i).getId() == id) {
-                controller.delete(id);
-                return Response.ok().build();
-            }
+
+        // update controller if no data found
+        if (!controller.contains(controller.getById(id))) {
+            updateController();
         }
-        return Response.status(404).entity("Message not found").build();
+        if (controller.contains(controller.getById(id))) {
+            Connection conn;
+            try {
+                conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement("DELETE FROM messages WHERE id = ?");
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
+            } catch (SQLException ex) {
+                Logger.getLogger(MessageService.class.getName()).log(Level.SEVERE, null, ex);
+                return Response.status(500).entity("Database error").build();
+            }
+            controller.deleteById(id);
+            return Response.ok().build();
+        } else {
+            return Response.status(404).entity("Message not found").build();
+        }
+    }
+
+    private void updateController() {
+        Connection conn;
+        try {
+            conn = DBUtil.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM messages");
+            while (rs.next()) {
+                Message message = new Message();
+                message.setId(rs.getInt("id"));
+                message.setTitle(rs.getString("title"));
+                message.setContents(rs.getString("contents"));
+                message.setAuthor(rs.getString("author"));
+                message.setSentTime(new Date());
+                if (!controller.contains(message)) {
+                    controller.add(message);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MessageService.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

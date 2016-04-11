@@ -33,6 +33,23 @@ public class MessageController {
         chat.remove(position);
     }
 
+    public void deleteById(int id) {
+        for (int i = 0; i < chat.size(); i++) {
+            if (chat.get(i).getId() == id) {
+                chat.remove(i);
+            }
+        }
+    }
+
+    public Message getById(int id) {
+        for (Message m : chat) {
+            if (m.getId() == id) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     public List<Message> getMessages() {
         return chat;
     }
@@ -43,6 +60,17 @@ public class MessageController {
             builder.add(m.toJSON());
         }
         return builder.build();
+    }
+
+    boolean contains(Message message) {
+        if (message != null) {
+            for (Message m : chat) {
+                if (m.getId() == message.getId()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
