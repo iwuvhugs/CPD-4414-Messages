@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Хост: localhost
--- Время создания: Апр 11 2016 г., 18:18
+-- Время создания: Апр 11 2016 г., 20:22
 -- Версия сервера: 5.6.26
 -- Версия PHP: 5.6.12
 
@@ -31,8 +31,16 @@ CREATE TABLE IF NOT EXISTS `messages` (
   `title` varchar(50) NOT NULL,
   `contents` text NOT NULL,
   `author` varchar(80) NOT NULL,
-  `sentTime` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `sentTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+--
+-- Дамп данных таблицы `messages`
+--
+
+INSERT INTO `messages` (`id`, `title`, `contents`, `author`, `sentTime`) VALUES
+(1, 'Message 1', 'It''s content of Message 1', 'Kirill', '2016-04-11 00:00:00'),
+(2, 'Message 2', 'It''s content of Message 2', 'Kirill', '2016-04-11 00:00:00');
 
 --
 -- Индексы сохранённых таблиц
@@ -52,7 +60,7 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT для таблицы `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=3;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

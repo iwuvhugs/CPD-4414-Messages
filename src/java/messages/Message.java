@@ -24,7 +24,8 @@ public class Message {
     private String author;
     private Date sentTime;
 
-    final DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    final DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//            'T'HH:mm:ss.SSS'Z'");
 
     public Message() {
         this.id = 0;
@@ -35,11 +36,11 @@ public class Message {
 
     public Message(JsonObject json) throws ParseException {
         System.out.println(json.toString());
-        this.id = json.getInt("id");
+        this.id = 0;
         this.title = json.getString("title");
         this.contents = json.getString("contents");
         this.author = json.getString("author");
-        this.sentTime = formatter.parse(json.getString("senttime"));
+        this.sentTime = formatter.parse(json.getString("sentTime"));
     }
 
     public int getId() {

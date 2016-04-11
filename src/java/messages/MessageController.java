@@ -62,10 +62,21 @@ public class MessageController {
         return builder.build();
     }
 
-    boolean contains(Message message) {
+    public boolean contains(Message message) {
         if (message != null) {
             for (Message m : chat) {
                 if (m.getId() == message.getId()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean contains(int id) {
+        if (id != 0) {
+            for (Message m : chat) {
+                if (m.getId() == id) {
                     return true;
                 }
             }

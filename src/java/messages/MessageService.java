@@ -63,7 +63,7 @@ public class MessageService {
                 message.setTitle(rs.getString("title"));
                 message.setContents(rs.getString("contents"));
                 message.setAuthor(rs.getString("author"));
-                message.setSentTime(new Date());
+                message.setSentTime(rs.getDate("sentTime"));
                 if (!controller.contains(message)) {
                     controller.add(message);
                 }
@@ -104,8 +104,7 @@ public class MessageService {
                     message.setTitle(rs.getString("title"));
                     message.setContents(rs.getString("contents"));
                     message.setAuthor(rs.getString("author"));
-                    System.out.println(rs.getDate("sentTime"));
-                    message.setSentTime(new Date());
+                    message.setSentTime(rs.getDate("sentTime"));
                     controller.add(message);
                     return Response.ok(message.toJSON()).build();
                 }
@@ -127,6 +126,7 @@ public class MessageService {
     @Produces("application/json")
     public Response getByDateRange(@PathParam("startDate") String sd, @PathParam("endDate") String ed) {
         try {
+            updateController();
             Date startDate = formatter.parse(sd);
             Date endDate = formatter.parse(ed);
             MessageController messagesInRange = new MessageController();
@@ -164,8 +164,34 @@ public class MessageService {
             return Response.status(500).entity("Date format error").build();
         }
         if (newMessage != null) {
-            controller.add(newMessage);
-            return Response.ok(newMessage.toJSON()).build();
+            Connection conn;
+            try {
+                conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(
+                        "INSERT INTO messages (title, contents, author, sentTime) "
+                        + "VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                pstmt.setString(1, newMessage.getTitle());
+                pstmt.setString(2, newMessage.getContents());
+                pstmt.setString(3, newMessage.getAuthor());
+                pstmt.setDate(4, new java.sql.Date(newMessage.getSentTime().getTime()));
+                int affectedRows = pstmt.executeUpdate();
+                if (affectedRows == 0) {
+                    return Response.status(404).entity("Message not added").build();
+                } else {
+                    try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            newMessage.setId(generatedKeys.getInt(1));
+                            controller.add(newMessage);
+                            return Response.ok(newMessage.toJSON()).build();
+                        } else {
+                            return Response.status(500).entity("Database error").build();
+                        }
+                    }
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(MessageService.class.getName()).log(Level.SEVERE, null, ex);
+                return Response.status(500).entity("Database error").build();
+            }
         } else {
             return Response.status(404).entity("Message not found").build();
         }
@@ -175,6 +201,9 @@ public class MessageService {
     @Path("{id}")
     public Response put(@PathParam("id") int id, String str) {
         JsonObject json = Json.createReader(new StringReader(str)).readObject();
+        if(!controller.contains(id)){
+            updateController();
+        } 
         Message updatedMessage;
         try {
             updatedMessage = new Message(json);
@@ -238,7 +267,7 @@ public class MessageService {
                 message.setTitle(rs.getString("title"));
                 message.setContents(rs.getString("contents"));
                 message.setAuthor(rs.getString("author"));
-                message.setSentTime(new Date());
+                message.setSentTime(rs.getDate("sentTime"));
                 if (!controller.contains(message)) {
                     controller.add(message);
                 }
