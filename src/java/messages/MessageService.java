@@ -201,9 +201,9 @@ public class MessageService {
     @Path("{id}")
     public Response put(@PathParam("id") int id, String str) {
         JsonObject json = Json.createReader(new StringReader(str)).readObject();
-        if(!controller.contains(id)){
+        if (!controller.contains(id)) {
             updateController();
-        } 
+        }
         Message updatedMessage;
         try {
             updatedMessage = new Message(json);
@@ -212,16 +212,33 @@ public class MessageService {
             return Response.status(500).entity("Date format error").build();
         }
         if (updatedMessage != null) {
-            for (int i = 0; i < controller.getMessages().size(); i++) {
-                if (controller.getMessages().get(i).getId() == id) {
-                    controller.put(updatedMessage, id);
+            Connection conn;
+            try {
+                conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(
+                        "UPDATE messages SET title = ?, contents = ?, author = ?, sentTime = ? "
+                        + "WHERE id = ?", Statement.RETURN_GENERATED_KEYS);
+                pstmt.setString(1, updatedMessage.getTitle());
+                pstmt.setString(2, updatedMessage.getContents());
+                pstmt.setString(3, updatedMessage.getAuthor());
+                pstmt.setDate(4, new java.sql.Date(updatedMessage.getSentTime().getTime()));
+                pstmt.setInt(5, id);
+                int affectedRows = pstmt.executeUpdate();
+                if (affectedRows == 0) {
+                    return Response.status(404).entity("Message not updated").build();
+                } else {
+                    updatedMessage.setId(id);
+                    controller.putAtId(updatedMessage, id);
                     return Response.ok(updatedMessage.toJSON()).build();
                 }
+            } catch (SQLException ex) {
+                Logger.getLogger(MessageService.class.getName()).log(Level.SEVERE, null, ex);
+                return Response.status(500).entity("Database error").build();
             }
-            return Response.status(404).entity("Message not updated").build();
         } else {
             return Response.status(404).entity("Message not found").build();
         }
+
     }
 
     /**

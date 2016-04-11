@@ -84,4 +84,14 @@ public class MessageController {
         return false;
     }
 
+    void putAtId(Message message, int id) {
+        if (message != null) {
+            for (int i = 0; i < chat.size(); i++) {
+                if (chat.get(i).getId() == id) {
+                    chat.set(i, message);
+                }
+            }
+        }
+    }
+
 }
