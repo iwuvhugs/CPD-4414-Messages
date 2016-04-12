@@ -6,11 +6,70 @@ and open the template in the editor.
 -->
 <html>
     <head>
-        <title>TODO supply a title</title>
+        <title>WebSocket example</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script>
+            var wsUri = "ws://localhost:8080/CPD-4414-Messages/messageSocket";
+            $(document).ready(function () {
+                var websocket = new WebSocket(wsUri);
+                websocket.onmessage = function (evt) {
+//                    if (typeof evt.data !== 'undefined') {
+//                        var json = $.parseJSON(evt.data);
+                    console.log(evt);
+//                    }
+                };
+
+                function getAll() {
+
+                    var data = {"getAll": true};
+                    var json = JSON.stringify(data);
+
+                    websocket.send(json);
+                }
+
+                function getById() {
+                    websocket.send({"getById": 1});
+                }
+
+                function getFromTo() {
+                    websocket.send({"getFromTo": ["startDate", "endDate"]});
+                }
+
+                function postMessage() {
+                    websocket.send({"post": {}});
+                }
+
+                function putMessage() {
+                    websocket.send({"put": {}});
+                }
+
+                function deleteMessage() {
+                    websocket.send({"delete": id});
+                }
+
+
+                $("#getAll").click(getAll);
+                $("#getById").click(getById);
+                $("#getFromTo").click(getFromTo);
+                $("#post").click(postMessage);
+                $("#put").click(putMessage);
+                $("#delete").click(deleteMessage);
+
+            });
+
+        </script>
+
     </head>
     <body>
-        <div>TODO write content</div>
+        <div>WebSocket example</div>
+        <div><button id="getAll">getAll</button><span></span></div>
+        <div><button id="getById">getById: 1</button><span></span></div>
+        <div><button id="getFromTo">getFromTo: </button><span></span></div>
+        <div><button id="post">post: </button><span></span></div>
+        <div><button id="put">put: </button><span></span></div>
+        <div><button id="delete">delete: </button><span></span></div>
     </body>
 </html>
