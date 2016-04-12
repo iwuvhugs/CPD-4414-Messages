@@ -31,23 +31,67 @@ and open the template in the editor.
                 }
 
                 function getById() {
-                    websocket.send({"getById": 1});
+
+                    var data = {"getById": 1};
+                    var json = JSON.stringify(data);
+
+                    websocket.send(json);
                 }
 
                 function getFromTo() {
-                    websocket.send({"getFromTo": ["startDate", "endDate"]});
+
+                    var data = {"getFromTo": ["2016-05-01", "2016-05-02"]};
+                    var json = JSON.stringify(data);
+
+                    websocket.send(json);
                 }
 
                 function postMessage() {
-                    websocket.send({"post": {}});
+
+                    var message = {
+                        "title": "Message 3",
+                        "contents": "It's content of Message 3",
+                        "author": "Kirill",
+                        "sentTime": "2016-04-11"
+                    };
+
+                    var data =
+                            {"post":
+                                        {
+                                            "title": "WEBSOCKET",
+                                            "contents": "It's content of Message 3",
+                                            "author": "Kirill",
+                                            "sentTime": "2016-04-11"
+                                        }
+                            };
+                    var json = JSON.stringify(data);
+
+                    websocket.send(json);
                 }
 
                 function putMessage() {
-                    websocket.send({"put": {}});
+
+                    var data =
+                            {"put":
+                                        {
+                                            "id": 11,
+                                            "title": "WEBSOCKET UPDATE",
+                                            "contents": "It's content of Message 3",
+                                            "author": "Kirill",
+                                            "sentTime": "2016-04-11"
+                                        }
+                            };
+                    var json = JSON.stringify(data);
+
+                    websocket.send(json);
                 }
 
                 function deleteMessage() {
-                    websocket.send({"delete": id});
+
+                    var data = {"delete": 10}
+                    var json = JSON.stringify(data);
+
+                    websocket.send(json);
                 }
 
 

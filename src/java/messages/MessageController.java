@@ -145,7 +145,7 @@ public class MessageController {
                 message.setContents(rs.getString("contents"));
                 message.setAuthor(rs.getString("author"));
                 message.setSentTime(rs.getDate("sentTime"));
-                if (!chat.contains(message)) {
+                if (!contains(message)) {
                     chat.add(message);
                 }
             }
@@ -293,10 +293,10 @@ public class MessageController {
 
     public boolean deleteMessage(int id) {
         // update controller if no data found
-        if (!chat.contains(getById(id))) {
+        if (!contains(getById(id))) {
             updateController();
         }
-        if (chat.contains(getById(id))) {
+        if (contains(getById(id))) {
             Connection conn;
             try {
                 conn = DBUtil.getConnection();
